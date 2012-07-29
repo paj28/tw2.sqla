@@ -201,6 +201,13 @@ class DbListPage(DbPage, twc.Page):
 
     @classmethod
     def post_define(cls):
+        if getattr(cls, 'edit', None):
+            kw = {'partial_parent': cls}
+            if not hasattr(cls.edit, 'entity') and hasattr(cls, 'entity'):
+                kw['entity'] = cls.entity
+            if not hasattr(cls.edit, 'entity'):
+                kw['redirect'] = cls._gen_compound_id(for_url=True)          
+            cls.edit = cls.edit(**kw)
         if cls.newlink:
             cls.newlink = cls.newlink(parent=cls)
 
