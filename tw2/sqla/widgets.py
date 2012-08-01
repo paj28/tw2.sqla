@@ -202,7 +202,7 @@ class DbListPage(DbPage, twc.Page):
     @classmethod
     def post_define(cls):
         if getattr(cls, 'edit', None):
-            kw = {'partial_parent': cls}
+            kw = {'partial_parent': cls, 'id': 'edit'}
             if not hasattr(cls.edit, 'entity') and hasattr(cls, 'entity'):
                 kw['entity'] = cls.entity
             if not hasattr(cls.edit, 'entity'):

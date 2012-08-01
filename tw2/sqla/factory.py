@@ -377,6 +377,7 @@ class AutoListPage(DbListPage):
         pass
 
 class AutoListPageEdit(AutoListPage):
+    _no_autoid = True
     class edit(DbFormPage):
         _no_autoid = True
         child = AutoTableForm
