@@ -221,6 +221,13 @@ class DbListPage(DbPage, twc.Page):
         if self.newlink:
             self.newlink.prepare()
 
+    @classmethod
+    def proc_url(cls, req, parts):
+        if not parts:
+            return twc.Widget.proc_url.im_func(cls, req, parts)
+        if parts == ['edit']:
+            return cls.edit.proc_url(req, [])
+
 
 # Note: this does not inherit from LinkField, as few of the parameters apply
 class DbLinkField(twc.Widget):
