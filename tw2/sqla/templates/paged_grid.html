@@ -1,0 +1,13 @@
+<div xmlns:py="http://genshi.edgewall.org/" py:attrs="w.attrs">
+<table>
+    <tr><th py:for="col in w.children[0].children_non_hidden">$col.label</th></tr>
+    <py:for each="row in w.children">${row.display()}</py:for>
+    <tr class="error"><td colspan="${len(w.children)}" id="${w.compound_id}:error">
+        ${w.error_msg}
+    </td></tr>
+</table>
+Showing $w.start-${min(w.start + w.parent.page_size - 1, w.count)} of $w.count
+<py:if test="w.start &gt; 1"><a href="${w.parent._gen_compound_id(for_url=True)}?start=${max(w.start - w.parent.page_size, 1)}">prev</a></py:if>
+<py:if test="w.start + w.parent.page_size &lt; w.count"><a href="${w.parent._gen_compound_id(for_url=True)}?start=${w.start + w.parent.page_size}">next</a></py:if>
+
+</div>

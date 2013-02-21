@@ -193,11 +193,22 @@ class DbListPage(DbPage, twc.Page):
     table from the database; there is no submit or write capability.    
     """
     newlink = twc.Param('New item widget', default=None)
+    empty_msg = twc.Param('Message to display when no data', default='There is nothing to display')
+    page_size = twc.Param('Number of items to show per page; None for unlimited', default=None)
     template = 'tw2.sqla.templates.dblistpage'
     _no_autoid = True
+    
+    def get_query(self, req):
+        return self.entity.query
 
     def fetch_data(self, req):
-        self.value = self.entity.query.all()
+        query = self.get_query(req)
+        if self.page_size:
+            self.child.count = query.count()
+            self.child.start = int(req.GET.get('start', 1))
+            self.value = query.offset(self.child.start-1).limit(self.page_size).all()
+        else:
+            self.value = query.all()
 
     @classmethod
     def post_define(cls):
@@ -228,6 +239,11 @@ class DbListPage(DbPage, twc.Page):
         if parts == ['edit']:
             return cls.edit.proc_url(req, [])
 
+
+class PagedGrid(twf.GridLayout):
+    count = twc.Variable('')
+    template = 'tw2.sqla.templates.paged_grid'
+    
 
 # Note: this does not inherit from LinkField, as few of the parameters apply
 class DbLinkField(twc.Widget):
