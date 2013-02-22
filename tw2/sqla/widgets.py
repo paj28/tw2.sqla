@@ -203,7 +203,15 @@ class DbListPage(DbPage, twc.Page):
         q = self.entity.query
         search = req.GET.get('search')
         if search:
-            conds = [getattr(self.entity, f).contains(search) for f in self.search.fields]
+            conds = []
+            for f in self.search.fields:
+                cls = self.entity
+                parts = f.split('.')
+                for part in parts[:-1]:
+                    x = getattr(cls, part)
+                    cls = x.property.mapper.class_
+                    q = q.join(x)
+                conds.append(getattr(cls, parts[-1]).contains(search))
             q = q.filter(sa.or_(*conds))
             self.search.value = search
         return q
