@@ -210,7 +210,7 @@ class DbListPage(DbPage, twc.Page):
                 for part in parts[:-1]:
                     x = getattr(cls, part)
                     cls = x.property.mapper.class_
-                    q = q.join(x)
+                    q = q.outerjoin(x)
                 conds.append(getattr(cls, parts[-1]).ilike('%'+search+'%'))
             q = q.filter(sa.or_(*conds))
             self.search.value = search
