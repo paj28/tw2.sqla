@@ -2,7 +2,7 @@ from widgets import (
     RelatedValidator, DbFormPage, DbListForm, DbListPage, DbLinkField, 
     commit_veto, transactional_session,
     DbSelectionField, DbSingleSelectField, DbCheckBoxList, DbRadioButtonList, DbCheckBoxTable,
-    DbSingleSelectLink, PagedGrid)
+    DbSingleSelectLink, PagedGrid, Search)
 from factory import (
     WidgetPolicy, ViewPolicy, EditPolicy,
     AutoTableForm, AutoViewGrid, AutoGrowingGrid,

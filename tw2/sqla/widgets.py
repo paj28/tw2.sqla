@@ -193,13 +193,21 @@ class DbListPage(DbPage, twc.Page):
     table from the database; there is no submit or write capability.    
     """
     newlink = twc.Param('New item widget', default=None)
+    search = twc.Param('Search widget', default=None)
     empty_msg = twc.Param('Message to display when no data', default='There is nothing to display')
     page_size = twc.Param('Number of items to show per page; None for unlimited', default=None)
     template = 'tw2.sqla.templates.dblistpage'
     _no_autoid = True
     
-    def get_query(self, req):
-        return self.entity.query
+    def get_query(self, req):    
+        q = self.entity.query
+        search = req.GET.get('search')
+        if search:
+            conds = [getattr(self.entity, f).contains(search) for f in self.search.fields]
+            q = q.filter(sa.or_(*conds))
+            self.search.value = search
+        return q
+        
 
     def fetch_data(self, req):
         query = self.get_query(req)
@@ -221,16 +229,22 @@ class DbListPage(DbPage, twc.Page):
             cls.edit = cls.edit(**kw)
         if cls.newlink:
             cls.newlink = cls.newlink(parent=cls)
+        if cls.search:
+            cls.search = cls.search(parent=cls)
 
     def __init__(self, **kw):
         super(DbListPage, self).__init__(**kw)
         if self.newlink:
             self.newlink = self.newlink.req()
+        if self.search:
+            self.search = self.search.req()
 
     def prepare(self):
         super(DbListPage, self).prepare()
         if self.newlink:
             self.newlink.prepare()
+        if self.search:
+            self.search.prepare()
 
     @classmethod
     def proc_url(cls, req, parts):
@@ -241,9 +255,18 @@ class DbListPage(DbPage, twc.Page):
 
 
 class PagedGrid(twf.GridLayout):
-    count = twc.Variable('')
+    count = twc.Variable('Total number of rows')
+    start = twc.Variable('Index of first row currently displayed')
     template = 'tw2.sqla.templates.paged_grid'
     
+
+class Search(twc.Widget):
+    fields = twc.Param('Fields to search', default=[])
+    template = 'tw2.sqla.templates.search'
+    resources = [
+        twc.Link(id='search', filename="static/search.png"),
+    ]    
+
 
 # Note: this does not inherit from LinkField, as few of the parameters apply
 class DbLinkField(twc.Widget):
