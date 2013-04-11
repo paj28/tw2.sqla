@@ -10,8 +10,12 @@ def from_dict(obj, data, protect_prm_tamp=True):
     never overwritten.
     """
 
-    mapper = sa.orm.object_mapper(obj)
-    pk_props = set(p.key for p in mapper.primary_key)
+    try:
+        mapper = sa.orm.object_mapper(obj)
+        pk_props = set(p.key for p in mapper.primary_key)
+    except sa.orm.exc.UnmappedInstanceError:
+        # TBD: this is a bit of a hack but seems to work for non-mapped objects
+        pk_props = set()
 
     for key, value in data.iteritems():
         if isinstance(value, dict):
