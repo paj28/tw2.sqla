@@ -187,6 +187,20 @@ class DbListForm(DbPage, twf.FormPage):
             return super(DbListForm, cls).validated_request(req, data)
 
 
+def text_search(cls, fields, search):
+    queries = []
+    for field in fields:
+        query = cls.query
+        parts = field.split('.')
+        cur_cls = cls
+        for part in parts[:-1]:
+            attr = getattr(cur_cls, part)
+            cur_cls = attr.property.mapper.class_
+            query = query.outerjoin(attr)
+        queries.append(query.filter(getattr(cur_cls, parts[-1]).ilike('%'+search+'%')))
+    return queries[0].union(*queries[1:])
+
+
 class DbListPage(DbPage, twc.Page):
     """
     A page that contains a list with database synchronisation. The `fetch_data` method loads a full
@@ -196,25 +210,19 @@ class DbListPage(DbPage, twc.Page):
     search = twc.Param('Search widget', default=None)
     empty_msg = twc.Param('Message to display when no data', default='There is nothing to display')
     page_size = twc.Param('Number of items to show per page; None for unlimited', default=None)
+    order_by = twc.Param('Field to order by')
     template = 'tw2.sqla.templates.dblistpage'
     _no_autoid = True
     
-    def get_query(self, req):    
-        q = self.entity.query
+    def get_query(self, req):
+        query = self.entity.query
         search = req.GET.get('search')
         if search:
-            conds = []
-            for f in self.search.fields:
-                cls = self.entity
-                parts = f.split('.')
-                for part in parts[:-1]:
-                    x = getattr(cls, part)
-                    cls = x.property.mapper.class_
-                    q = q.outerjoin(x)
-                conds.append(getattr(cls, parts[-1]).ilike('%'+search+'%'))
-            q = q.filter(sa.or_(*conds))
+            query = text_search(self.entity, self.search.fields, search)
             self.search.value = search
-        return q
+        if hasattr(self, 'order_by'):
+            query = query.order_by(self.order_by)
+        return query
         
 
     def fetch_data(self, req):
@@ -273,7 +281,7 @@ class Search(twc.Widget):
     template = 'tw2.sqla.templates.search'
     resources = [
         twc.Link(id='search', filename="static/search.png"),
-    ]    
+    ]
 
 
 # Note: this does not inherit from LinkField, as few of the parameters apply
