@@ -202,7 +202,7 @@ def text_search(cls, fields, search):
             query = query.outerjoin(attr)
         fld = getattr(cur_cls, parts[-1])
         if fuzzy:
-            queries.append(query.filter(sa.or_(*(fld.ilike('%'+s+'%') for s in search.strip().split()))))
+            queries.append(query.filter(sa.and_(*(fld.ilike('%'+s+'%') for s in search.strip().split()))))
         else:
             queries.append(query.filter(fld == search))
     return queries[0].union(*queries[1:])
