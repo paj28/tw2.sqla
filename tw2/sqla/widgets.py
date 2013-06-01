@@ -191,13 +191,20 @@ def text_search(cls, fields, search):
     queries = []
     for field in fields:
         query = cls.query
+        fuzzy = field.startswith('%')
+        if fuzzy:
+            field = field[1:]            
         parts = field.split('.')
         cur_cls = cls
         for part in parts[:-1]:
             attr = getattr(cur_cls, part)
             cur_cls = attr.property.mapper.class_
             query = query.outerjoin(attr)
-        queries.append(query.filter(getattr(cur_cls, parts[-1]).ilike('%'+search+'%')))
+        fld = getattr(cur_cls, parts[-1])
+        if fuzzy:
+            queries.append(query.filter(sa.or_(*(fld.ilike('%'+s+'%') for s in search.strip().split()))))
+        else:
+            queries.append(query.filter(fld == search))
     return queries[0].union(*queries[1:])
 
 
