@@ -249,6 +249,22 @@ class DbListPage(DbPage, twc.Page):
             self.value = query.all()
 
     @classmethod
+    def request(cls, req):
+        ct = cls.content_type
+        if isinstance(ct, twc.params.Deferred):
+            ct = ct.fn()
+        resp = webob.Response(request=req, content_type=ct)
+        ins = cls.req()
+        ins.fetch_data(req)
+        if req.GET.get('search') and len(ins.value) == 1 and hasattr(cls, 'edit'):
+            url = cls.edit._gen_compound_id(for_url=True) + "?id=" + str(ins.value[0].id)
+            return webob.Response(request=req, status=302, location=url)
+        resp.body = ins.display().encode(
+            twc.core.request_local()['middleware'].config.encoding
+        )
+        return resp
+
+    @classmethod
     def post_define(cls):
         if getattr(cls, 'edit', None):
             kw = {'partial_parent': cls, 'id': 'edit'}
