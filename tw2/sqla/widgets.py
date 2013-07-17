@@ -339,9 +339,16 @@ class DbSelectionField(twf.SelectionField):
     entity = twc.Param('SQLAlchemy mapped class to use', request_local=False)
 
 
+def load_cached(entity):
+    cache = twc.core.request_local().setdefault('sqla_cache', {})
+    if entity not in cache:
+        cache[entity] = entity.query.all()
+    return cache[entity]
+
+
 class DbSingleSelectionField(DbSelectionField):
     def prepare(self):
-        self.options = [(getattr(x, self.validator.primary_key.name), unicode(x)) for x in self.entity.query.all()]
+        self.options = [(getattr(x, self.validator.primary_key.name), unicode(x)) for x in load_cached(self.entity)]
         super(DbSingleSelectionField, self).prepare()
 
     @classmethod
@@ -353,7 +360,7 @@ class DbSingleSelectionField(DbSelectionField):
 
 class DbMultipleSelectionField(DbSelectionField):
     def prepare(self):
-        self.options = [(getattr(x, self.item_validator.primary_key.name), unicode(x)) for x in self.entity.query.all()]
+        self.options = [(getattr(x, self.item_validator.primary_key.name), unicode(x)) for x in load_cached(self.entity)]
         super(DbMultipleSelectionField, self).prepare()
 
     @classmethod
