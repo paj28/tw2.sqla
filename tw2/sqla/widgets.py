@@ -188,12 +188,14 @@ class DbListForm(DbPage, twf.FormPage):
 
 
 def text_search(cls, fields, search):
+    search = search.strip()
     queries = []
     for field in fields:
         query = cls.query
         fuzzy = field.startswith('%')
-        if fuzzy:
-            field = field[1:]            
+        integer = field.startswith('#')
+        if fuzzy or integer:
+            field = field[1:]
         parts = field.split('.')
         cur_cls = cls
         for part in parts[:-1]:
@@ -202,7 +204,12 @@ def text_search(cls, fields, search):
             query = query.outerjoin(attr)
         fld = getattr(cur_cls, parts[-1])
         if fuzzy:
-            queries.append(query.filter(sa.and_(*(fld.ilike('%'+s+'%') for s in search.strip().split()))))
+            queries.append(query.filter(sa.and_(*(fld.ilike('%'+s+'%') for s in search.split()))))
+        elif integer:
+            try:
+                queries.append(query.filter(fld == int(search)))
+            except ValueError, e:
+                pass
         else:
             queries.append(query.filter(fld == search))
     return queries[0].union(*queries[1:])
