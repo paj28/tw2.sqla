@@ -225,6 +225,8 @@ class DbListPage(DbPage, twc.Page):
     empty_msg = twc.Param('Message to display when no data', default='There is nothing to display')
     page_size = twc.Param('Number of items to show per page; None for unlimited', default=None)
     order_by = twc.Param('Field to order by')
+    join = twc.Param('Tables to join')
+    joinedload = twc.Param('Relations to eager load')
     template = 'tw2.sqla.templates.dblistpage'
     _no_autoid = True
     
@@ -236,6 +238,11 @@ class DbListPage(DbPage, twc.Page):
             self.search.value = search
         if hasattr(self, 'order_by'):
             query = query.order_by(self.order_by)
+        if hasattr(self, 'joinedload'):
+            query = query.options(*[sa.orm.joinedload(jl) for jl in self.joinedload])
+        if hasattr(self, 'join'):
+            for tbl in self.join:
+                query = query.join(tbl)
         return query
         
 
