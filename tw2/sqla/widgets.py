@@ -227,6 +227,7 @@ class DbListPage(DbPage, twc.Page):
     order_by = twc.Param('Field to order by')
     join = twc.Param('Tables to join')
     joinedload = twc.Param('Relations to eager load')
+    baseqs = twc.Variable('Query string with the start parameter removed. This is used by PagedGrid to correctly maintain URL parameters in links.')
     template = 'tw2.sqla.templates.dblistpage'
     _no_autoid = True
     
@@ -247,6 +248,7 @@ class DbListPage(DbPage, twc.Page):
         
 
     def fetch_data(self, req):
+        self.baseqs = urllib.urlencode(dict((k,v) for (k,v) in req.GET.items() if k != 'start'))
         query = self.get_query(req)
         if self.page_size:
             self.child.count = query.count()

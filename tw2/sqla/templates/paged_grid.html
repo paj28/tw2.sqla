@@ -7,7 +7,7 @@
     </td></tr>
 </table>
 Showing $w.start-${min(w.start + w.parent.page_size - 1, w.count)} of $w.count
-<py:if test="w.start &gt; 1"><a href="${w.parent._gen_compound_id(for_url=True)}?start=${max(w.start - w.parent.page_size, 1)}&amp;search=${w.parent.search and w.parent.search.value}">prev</a></py:if>
-<py:if test="w.start + w.parent.page_size &lt; w.count"><a href="${w.parent._gen_compound_id(for_url=True)}?start=${w.start + w.parent.page_size}&amp;search=${w.parent.search and w.parent.search.value}">next</a></py:if>
-<py:if test="w.start + w.parent.page_size &lt; w.count"><a href="${w.parent._gen_compound_id(for_url=True)}?start=${1 + w.count - w.parent.page_size}&amp;search=${w.parent.search and w.parent.search.value}">end</a></py:if>
+<py:if test="w.start &gt; 1"><a href="${w.parent._gen_compound_id(for_url=True)}?start=${max(w.start - w.parent.page_size, 1)}&amp;${w.parent.baseqs}">prev</a></py:if>
+<py:if test="w.start + w.parent.page_size &lt; w.count"><a href="${w.parent._gen_compound_id(for_url=True)}?start=${w.start + w.parent.page_size}&amp;${w.parent.baseqs}">next</a></py:if>
+<py:if test="w.start + w.parent.page_size &lt; w.count"><a href="${w.parent._gen_compound_id(for_url=True)}?start=${1 + w.count - w.parent.page_size}&amp;${w.parent.baseqs}">end</a></py:if>
 </div>
