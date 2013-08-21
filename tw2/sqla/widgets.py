@@ -286,6 +286,8 @@ class DbListPage(DbPage, twc.Page):
             cls.newlink = cls.newlink(parent=cls)
         if cls.search:
             cls.search = cls.search(parent=cls)
+        if hasattr(cls, 'child') and issubclass(cls.child, twf.GridLayout) and hasattr(cls, 'title'):
+            cls.child.empty_message = 'There are no ' + cls.title.lower() + ' to show.'
 
     def __init__(self, **kw):
         super(DbListPage, self).__init__(**kw)
